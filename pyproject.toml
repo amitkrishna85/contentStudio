@@ -1,2 +1,18 @@
+[project]
+name = "creatoros"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "google-genai>=2.0.0",
+    "langgraph",
+    "sqlalchemy",
+    "apscheduler",
+    "jinja2",
+    "pillow",
+    "python-dotenv",
+]
+
 [tool.vercel]
 entrypoint = "creatoros.app.main:app"

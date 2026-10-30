@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content · CreatorOS</title>
+  <link rel="stylesheet" href="/static/css/studio.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-lockup" href="/"><span class="brand-mark">C</span><span class="brand-name">creator<span>OS</span><small>CONTENT STUDIO</small></span></a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="/"><span class="nav-icon">◫</span>Overview</a>
+        <a class="nav-link" href="/new"><span class="nav-icon">＋</span>Create content</a>
+        <a class="nav-link" href="/#recent"><span class="nav-icon">▤</span>Content library</a>
+        <a class="nav-link" href="/#learning"><span class="nav-icon">↗</span>Learning loop</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="sidebar-help-icon">?</div><div><strong>Your studio, learning</strong><small>Every post makes the next one smarter.</small></div></div>
+      <div class="user-profile"><span class="user-avatar">A</span><span><strong>Studio workspace</strong><small>Local environment</small></span></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="breadcrumb"><a href="/">Workspace</a> <span>/</span> Content review</div><div class="topbar-actions"><a class="button button-dark button-small" href="/new">＋ New content</a></div></header>
+      <section class="page-content">
+        <a class="back-link" href="/">← &nbsp;Back to overview</a>
+        <div class="detail-title-row">
+          <div>
+            <p class="eyebrow">CONTENT REVIEW · #{{ content.id }}</p>
+            <h1>{{ content.brief }}</h1>
+            <div class="detail-meta"><span>{{ content.brand.name }}</span><span>{{ content.platform }}</span>{% if legacy_placeholder %}<span class="status-legacy">Needs regeneration</span>{% else %}<span class="status-{{ content.status }}">{{ content.status|capitalize }}</span>{% endif %}<span>{{ content.created_at.strftime("%b %d, %Y") if content.created_at else "" }}</span></div>
+          </div>
+          {% if content.status == "draft" and not legacy_placeholder %}
+          <form method="post" action="/content/{{ content.id }}/schedule"><button class="button button-dark" type="submit">Schedule this post <span>→</span></button></form>
+          {% endif %}
+        </div>
+
+        <div class="detail-layout">
+          <div>
+            {% if legacy_placeholder %}
+            <div class="form-error config-notice" role="alert"><strong>This is not an AI-generated post.</strong> It was saved by the earlier generic fallback while AI generation was unavailable. Do not publish it. Configure <code>GEMINI_API_KEY</code>, then create a fresh brief.</div>
+            {% elif request.query_params.get("error") == "legacy" %}
+            <div class="form-error config-notice" role="alert">This older placeholder cannot be scheduled. Generate fresh content after configuring Gemini.</div>
+            {% endif %}
+            <section class="detail-main">
+              <div class="detail-section-heading"><h2>{% if legacy_placeholder %}Saved placeholder{% else %}Final content{% endif %}</h2>{% if not legacy_placeholder %}<button class="copy-button" type="button" id="copy-post">Copy post</button>{% endif %}<small>Editor score: {{ "%.1f"|format(content.editor_score or 0) }} / 10</small></div>
+              {% if strategy.angle %}
+              <div class="strategy-callout"><span>STRATEGIC ANGLE · {{ strategy.hook_style or "Brand-led" }}</span><strong>{{ strategy.angle }}</strong></div>
+              {% endif %}
+              <div class="copy-panel" id="final-copy">{{ content.final_text }}</div>
+              {% if not legacy_placeholder %}<span class="copy-feedback" id="copy-feedback" aria-live="polite"></span>{% endif %}
+            </section>
+            <section class="detail-main">
+              <div class="detail-section-heading"><h2>Draft journey</h2><small>{{ drafts|length }} version{% if drafts|length != 1 %}s{% endif %}</small></div>
+              <div class="draft-stack">
+                {% for draft in drafts %}
+                <article class="draft-version">
+                  <div class="draft-version-head"><strong>{% if loop.last %}Final draft{% else %}Draft v{{ loop.index }}{% endif %}</strong><span>{% if loop.last %}Selected{% else %}Earlier version{% endif %}</span></div>
+                  <p>{{ draft }}</p>
+                </article>
+                {% endfor %}
+              </div>
+            </section>
+            <section class="detail-main">
+              <div class="detail-section-heading"><h2>Creative</h2><small>Generated for {{ content.platform }}</small></div>
+              {% if image_name %}
+              <img class="visual-preview" src="/static/images/{{ image_name }}" alt="Creative visual for this post">
+              {% else %}
+              <div class="copy-panel">No visual was saved for this content.</div>
+              {% endif %}
+            </section>
+          </div>
+          <aside>
+            <section class="detail-aside-card">
+              <div class="detail-section-heading"><h2>Editorial score</h2><small>{{ editor_result.verdict or "Reviewed" }}</small></div>
+              <div class="score-list">
+                {% for key, label in [("hook_strength", "Hook strength"), ("clarity", "Clarity"), ("brand_voice_match", "Brand voice"), ("platform_fit", "Platform fit"), ("specificity", "Specificity"), ("call_to_action", "Call to action")] %}
+                <div>
+                  <div class="score-row"><span>{{ label }}</span><strong>{{ editor_scores.get(key, 0) }}/10</strong></div>
+                  <div class="score-meter"><i style="width: {{ (editor_scores.get(key, 0) * 10)|int }}%"></i></div>
+                </div>
+                {% endfor %}
+              </div>
+              {% if editor_result.required_edits %}
+              <div class="status-message"><strong>Editor notes</strong><br>{{ editor_result.required_edits|join(" · ") }}</div>
+              {% endif %}
+            </section>
+            <section class="detail-aside-card">
+              <div class="detail-section-heading"><h2>Decision timeline</h2></div>
+              <div class="timeline">
+                {% for decision in decisions %}
+                <article class="timeline-item">
+                  <strong>{{ decision.agent|capitalize }} · {{ decision.decision_type|capitalize }}</strong>
+                  <p>{{ decision.summary }}</p>
+                  <small>{{ decision.created_at.strftime("%b %d · %H:%M") if decision.created_at else "" }}</small>
+                </article>
+                {% endfor %}
+                {% if content.status == "scheduled" %}
+                <article class="timeline-item"><strong>Scheduler · Scheduled</strong><p>Publishing window selected for {{ content.scheduled_at.strftime("%b %d · %H:%M") if content.scheduled_at else "the next available slot" }}.</p></article>
+                {% endif %}
+              </div>
+              {% if content.status == "draft" and not legacy_placeholder %}
+              <form class="schedule-form" method="post" action="/content/{{ content.id }}/schedule"><button class="button button-lime" type="submit">Schedule post <span>→</span></button></form>
+              {% elif content.scheduled_at %}
+              <p class="status-message">Scheduled for {{ content.scheduled_at.strftime("%B %d at %H:%M UTC") }}.</p>
+              {% endif %}
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+  {% if not legacy_placeholder %}
+  <script>
+    document.getElementById("copy-post").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(document.getElementById("final-copy").innerText);
+      document.getElementById("copy-feedback").textContent = "Post copied to clipboard.";
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="/static/css/studio.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-lockup" href="/" aria-label="CreatorOS home">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">creator<span>OS</span><small>CONTENT STUDIO</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="/"><span class="nav-icon">◫</span>Overview</a>
+        <a class="nav-link" href="/new"><span class="nav-icon">＋</span>Create content</a>
+        <a class="nav-link" href="#recent"><span class="nav-icon">▤</span>Content library</a>
+        <a class="nav-link" href="#learning"><span class="nav-icon">↗</span>Learning loop</a>
+      </nav>
+      <div class="sidebar-section">
+        <div class="workspace-label">YOUR BRANDS</div>
+        {% for brand in brands %}
+        <div class="brand-item">
+          <span class="brand-avatar {% if loop.index == 2 %}avatar-violet{% endif %}">{{ brand.name[0] }}</span>
+          <span><strong>{{ brand.name }}</strong><small>{{ brand.sample_count }} voice samples</small></span>
+          <span class="brand-live"></span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="sidebar-bottom">
+        <div class="sidebar-help-icon">?</div>
+        <div><strong>Your studio, learning</strong><small>Every post makes the next one smarter.</small></div>
+      </div>
+      <div class="user-profile">
+        <span class="user-avatar">A</span>
+        <span><strong>Studio workspace</strong><small>Local environment</small></span>
+        <span class="more-icon">•••</span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> Overview</div>
+        <div class="topbar-actions">
+          <span class="system-status {% if not gemini_configured %}system-status-warning{% endif %}"><i></i>{% if gemini_configured %}Gemini connected{% else %}Gemini API not configured{% endif %}</span>
+          <a class="button button-dark button-small" href="/new"><span>＋</span> New content</a>
+        </div>
+      </header>
+
+      <section class="page-content">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">YOUR CREATIVE WORKSPACE</p>
+            <h1>{% if now.hour < 12 %}Good morning{% elif now.hour < 18 %}Good afternoon{% else %}Good evening{% endif %}. <span class="wave">✳</span></h1>
+            <p class="subheading">Your content studio is ready. Create something worth stopping for.</p>
+          </div>
+          <div class="date-chip"><span class="date-icon">▦</span> {{ now.strftime("%B %d, %Y") }}</div>
+        </div>
+
+        <section class="metrics-grid" aria-label="Studio metrics">
+          <article class="metric-card">
+            <div class="metric-top"><span class="metric-icon icon-violet">▤</span><span class="metric-label">CONTENT CREATED</span></div>
+            <div class="metric-value">{{ total_posts }}</div>
+            <div class="metric-foot"><span class="metric-neutral">All time</span><span>Across your brands</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span class="metric-icon icon-green">◷</span><span class="metric-label">SCHEDULED</span></div>
+            <div class="metric-value">{{ scheduled }}</div>
+            <div class="metric-foot"><span class="metric-neutral">In the queue</span><span>Ready for publishing</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span class="metric-icon icon-blue">↗</span><span class="metric-label">PUBLISHED</span></div>
+            <div class="metric-value">{{ published }}</div>
+            <div class="metric-foot"><span class="metric-neutral">Live posts</span><span>Performance can be tracked</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span class="metric-icon icon-orange">✦</span><span class="metric-label">ACTIVE LEARNINGS</span></div>
+            <div class="metric-value">{{ active_learnings }}</div>
+            <div class="metric-foot"><span class="metric-neutral">Evidence-backed</span><span>Improving future drafts</span></div>
+          </article>
+        </section>
+
+        <section class="hero-card">
+          <div class="hero-copy">
+            <div class="hero-kicker"><span class="sparkle">✦</span> THE CREATOROS CONTENT LOOP</div>
+            <h2>From brief to <em>breakthrough.</em></h2>
+            <p>One brief. A team of specialist agents. Content that sounds like you, gets sharper with every edit, and learns from what performs.</p>
+            <a class="button button-lime" href="/new">Start with a brief <span>→</span></a>
+          </div>
+          <div class="agent-flow" aria-label="Content creation process">
+            <div class="flow-line"></div>
+            <div class="flow-node"><span class="flow-icon">✳</span><span><strong>Strategy</strong><small>Find the angle</small></span></div>
+            <div class="flow-node"><span class="flow-icon flow-icon-blue">✎</span><span><strong>Writing</strong><small>Draft in your voice</small></span></div>
+            <div class="flow-node"><span class="flow-icon flow-icon-violet">⌕</span><span><strong>Editorial</strong><small>Critique & refine</small></span></div>
+            <div class="flow-node"><span class="flow-icon flow-icon-orange">▧</span><span><strong>Visuals</strong><small>Make it memorable</small></span></div>
+            <div class="flow-node"><span class="flow-icon flow-icon-green">↗</span><span><strong>Learning</strong><small>Get smarter over time</small></span></div>
+          </div>
+          <div class="hero-decoration"></div>
+        </section>
+
+        <div class="section-heading" id="recent">
+          <div><p class="eyebrow">YOUR WORKSPACE</p><h2>Recent content</h2></div>
+          <a class="text-link" href="/new">Create new <span>→</span></a>
+        </div>
+
+        {% if contents %}
+        <section class="content-grid">
+          {% for item in contents %}
+          <a class="content-card" href="/content/{{ item.id }}">
+            <div class="content-card-top">
+              <span class="platform-tag">{{ item.platform }}</span>
+              {% if item.id in legacy_content_ids %}
+              <span class="status-pill status-legacy">Needs regeneration</span>
+              {% else %}
+              <span class="status-pill status-{{ item.status }}">{{ item.status|capitalize }}</span>
+              {% endif %}
+            </div>
+            <h3>{{ item.brief }}</h3>
+            <p class="content-preview">{{ (item.final_text or "Your generated content will appear here.")[:150] }}{% if item.final_text and item.final_text|length > 150 %}…{% endif %}</p>
+            <div class="content-card-footer">
+              <span class="brand-mini">{{ item.brand.name if item.brand else "CreatorOS" }}</span>
+              <span class="score-mini"><span>✦</span> {{ "%.1f"|format(item.editor_score or 0) }}/10</span>
+              <span class="card-arrow">↗</span>
+            </div>
+          </a>
+          {% endfor %}
+        </section>
+        {% else %}
+        <section class="empty-state">
+          <span class="empty-icon">✳</span>
+          <h3>Your first post is one brief away</h3>
+          <p>Choose a brand, share your idea, and watch the strategy, writing, editing and visual agents work together.</p>
+          <a class="button button-dark" href="/new">Create your first post <span>→</span></a>
+        </section>
+        {% endif %}
+
+        <section class="learning-banner" id="learning">
+          <div class="learning-mark">↗</div>
+          <div><strong>Your studio learns from performance</strong><p>Record post results to reveal patterns and improve future recommendations.</p></div>
+          <a href="/new">Explore the learning loop <span>→</span></a>
+        </section>
+        <footer class="page-footer"><span>CreatorOS</span> &nbsp;·&nbsp; Your content engine, with a feedback loop.</footer>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

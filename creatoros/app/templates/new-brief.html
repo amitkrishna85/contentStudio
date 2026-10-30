@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · CreatorOS</title>
+  <link rel="stylesheet" href="/static/css/studio.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-lockup" href="/"><span class="brand-mark">C</span><span class="brand-name">creator<span>OS</span><small>CONTENT STUDIO</small></span></a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-link" href="/"><span class="nav-icon">◫</span>Overview</a>
+        <a class="nav-link active" href="/new"><span class="nav-icon">＋</span>Create content</a>
+        <a class="nav-link" href="/#recent"><span class="nav-icon">▤</span>Content library</a>
+        <a class="nav-link" href="/#learning"><span class="nav-icon">↗</span>Learning loop</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="sidebar-help-icon">?</div><div><strong>Your studio, learning</strong><small>Every post makes the next one smarter.</small></div></div>
+      <div class="user-profile"><span class="user-avatar">A</span><span><strong>Studio workspace</strong><small>Local environment</small></span></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="breadcrumb"><a href="/">Workspace</a> <span>/</span> Create content</div><div class="topbar-actions"><span class="system-status {% if not gemini_configured %}system-status-warning{% endif %}"><i></i>{% if gemini_configured %}Gemini connected{% else %}Gemini API not configured{% endif %}</span></div></header>
+      <section class="page-content form-page">
+        <a class="back-link" href="/">← &nbsp;Back to overview</a>
+        <div class="form-heading"><p class="eyebrow">YOUR NEXT PIECE STARTS HERE</p><h1>Give the studio a brief.</h1><p class="subheading">Tell us what you want to say. Your agents will find the angle, write, critique, revise and create a visual.</p></div>
+        {% if not gemini_configured %}
+        <div class="form-error config-notice" role="status"><strong>AI generation is not configured.</strong> Add your Gemini API key to <code>.env</code> as <code>GEMINI_API_KEY=...</code>, then restart CreatorOS. No placeholder content will be saved.</div>
+        {% endif %}
+        {% if generation_error %}
+        <div class="form-error" role="alert"><strong>Content was not generated.</strong> {{ generation_error }}</div>
+        {% endif %}
+        {% if request.query_params.get("error") == "brief" %}
+        <div class="form-error" role="alert">Add a brief before generating content.</div>
+        {% endif %}
+        <form class="brief-form" method="post" action="/new">
+          <div class="form-main">
+            <label class="field-label" for="brief">What should this content be about?<span>REQUIRED</span></label>
+            <textarea id="brief" name="brief" rows="6" required placeholder="Example: A LinkedIn post about how security teams can adopt AI without losing control. Focus on practical guardrails, not fear.">{{ brief_value or "" }}</textarea>
+            <div class="field-hint">A clear audience, point of view, or desired outcome helps the strategist find a stronger angle.</div>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" for="platform">Platform</label>
+                <select id="platform" name="platform">
+                  <option {% if selected_platform == "LinkedIn" %}selected{% endif %}>LinkedIn</option>
+                  <option {% if selected_platform == "X thread" %}selected{% endif %}>X thread</option>
+                  <option {% if selected_platform == "Instagram" %}selected{% endif %}>Instagram</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="brand_id">Brand voice</label>
+                <select id="brand_id" name="brand_id" required>
+                  {% for brand in brands %}
+                  <option value="{{ brand.id }}" {% if selected_brand_id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-actions"><span><i class="mini-shield">✦</i> Your brand voice stays consistent</span><button id="generate-button" type="submit" class="button button-dark">Generate content <span>→</span></button></div>
+            <p id="generation-status" class="field-hint" role="status" aria-live="polite"></p>
+          </div>
+          <aside class="form-aside">
+            <div class="aside-heading"><span class="aside-spark">✦</span><span>WHAT HAPPENS NEXT</span></div>
+            <ol class="step-list">
+              <li><span>01</span><div><strong>Find your angle</strong><small>Strategy connects the brief to audience and brand.</small></div></li>
+              <li><span>02</span><div><strong>Write in your voice</strong><small>A platform-aware draft shaped by your voice profile.</small></div></li>
+              <li><span>03</span><div><strong>Critique & revise</strong><small>Editorial feedback improves clarity, specificity and fit.</small></div></li>
+              <li><span>04</span><div><strong>Make it visual</strong><small>A matching image or a designed fallback card.</small></div></li>
+            </ol>
+            <div class="privacy-note"><span>◈</span><p>Every important decision is saved in the content timeline, so you can see how the final piece came together.</p></div>
+          </aside>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelector(".brief-form").addEventListener("submit", () => {
+      const button = document.getElementById("generate-button");
+      button.disabled = true;
+      button.textContent = "Generating content…";
+      document.getElementById("generation-status").textContent =
+        "This can take a minute while Gemini creates and reviews your content. Please keep this page open.";
+    });
+  </script>
+</body>
+</html>

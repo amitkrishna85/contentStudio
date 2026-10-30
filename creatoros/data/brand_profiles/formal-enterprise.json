@@ -1,0 +1,29 @@
+{
+  "tone": "Formal, confident, and operationally precise",
+  "sentence_length": "Medium to long, built for executive clarity",
+  "vocabulary": [
+    "risk",
+    "governance",
+    "control",
+    "resilience",
+    "accountability",
+    "operational maturity"
+  ],
+  "emoji_habits": "Almost never uses emoji; prefers authority and trust signals",
+  "hashtag_habits": "Rarely uses hashtags unless promoting a campaign or event",
+  "formatting_quirks": [
+    "Uses clear topic sentences",
+    "Presents practical frameworks",
+    "Writes in measured, evidence-led paragraphs"
+  ],
+  "banned_phrases": [
+    "hacky",
+    "quick fix",
+    "just trust me"
+  ],
+  "few_shot_exemplars": [
+    "Security leaders need more than alerts. They need a clear operational model for risk reduction.",
+    "The strongest teams are not simply adding tools, they are simplifying governance.",
+    "A mature security posture is built on repeatability."
+  ]
+}

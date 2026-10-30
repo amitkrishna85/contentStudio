@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+creatoros/.env
+.DS_Store
+static/images/*.png
+static/images/*.jpg
+creatoros/static/images/*.png
+creatoros/static/images/*.jpg
+creatoros.db

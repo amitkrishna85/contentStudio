@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "creatoros.app.main:app"

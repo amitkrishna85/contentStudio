@@ -30,7 +30,7 @@ Strategist -> Writer -> Editor -> Visual -> Schedule -> Learn
 - A successful generation produces platform-ready copy and a visual; the content review page includes a copy-to-clipboard action. Gemini API failures are shown to the user rather than disguised as successful generic drafts.
 - Brand voice describes the style inferred from a brand's sample posts (tone, sentence length, vocabulary, emoji and hashtag habits, formatting quirks, phrases to avoid, and example copy). The two demo profiles are seeded from their included sample sets.
 - SQLite is used for durable records and the learning loop.
-- On Vercel, SQLite uses `/tmp/creatoros.db` so requests can initialize the app in the writable temporary directory. Vercel function storage is ephemeral and may differ between instances; use a managed persistent database before relying on saved content in production.
+- On Vercel, SQLite and generated images use the writable temporary directory. Vercel function storage is ephemeral and may differ between instances; use managed persistent database and object storage before relying on saved content and images in production.
 - Agent decisions are kept in the database as structured events for auditing.
 - A simple learning playbook is injected into new generations when enough evidence exists.
 

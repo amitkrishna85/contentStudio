@@ -63,8 +63,8 @@
             </section>
             <section class="detail-main">
               <div class="detail-section-heading"><h2>Creative</h2><small>Generated for {{ content.platform }}</small></div>
-              {% if image_name %}
-              <img class="visual-preview" src="/static/images/{{ image_name }}" alt="Creative visual for this post">
+              {% if image_url %}
+              <img class="visual-preview" src="{{ image_url }}" alt="Creative visual for this post">
               {% else %}
               <div class="copy-panel">No visual was saved for this content.</div>
               {% endif %}

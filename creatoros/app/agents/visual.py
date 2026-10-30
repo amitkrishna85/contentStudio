@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -18,10 +20,18 @@ def build_image_prompt(final_text: str, brand_profile: dict | None = None) -> st
     )
 
 
+def _visual_output_dir(output_dir: str | None = None) -> Path:
+    if output_dir:
+        return Path(output_dir)
+    if os.getenv("VERCEL"):
+        return Path(tempfile.gettempdir()) / "creatoros" / "images"
+    return Path(__file__).resolve().parents[2] / "static" / "images"
+
+
 def create_visual(final_text: str, brand_profile: dict | None = None, output_dir: str | None = None) -> dict:
     """Create a visual asset, falling back to a text card if generation fails."""
     prompt = build_image_prompt(final_text, brand_profile)
-    target_dir = Path(output_dir or Path(__file__).resolve().parents[2] / "static" / "images")
+    target_dir = _visual_output_dir(output_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
     try:
         image_path = generate_image(prompt, output_dir=str(target_dir))

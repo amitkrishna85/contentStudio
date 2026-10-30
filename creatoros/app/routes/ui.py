@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import parse_qs
 
-from fastapi import APIRouter, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from google.genai._gaos.lib.compat_errors import APITimeoutError, GeminiNextGenAPIClientError
 from google.genai.errors import APIError
@@ -22,6 +24,14 @@ from creatoros.app.models import Brand, Content, Decision, Learning
 router = APIRouter()
 APP_ROOT = Path(__file__).resolve().parents[1]
 templates = Jinja2Templates(directory=str(APP_ROOT / "templates"))
+
+
+@router.get("/generated-images/{image_name}")
+async def generated_image(image_name: str):
+    image_path = Path(tempfile.gettempdir()) / "creatoros" / "images" / Path(image_name).name
+    if not image_path.is_file():
+        raise HTTPException(status_code=404, detail="Generated image not found.")
+    return FileResponse(image_path, media_type="image/png")
 
 
 def _is_legacy_fallback(text: str | None) -> bool:
@@ -283,6 +293,11 @@ async def content_detail(request: Request, content_id: int):
         editor_decision = next((decision for decision in decisions if decision.agent == "editor"), None)
         editor_result = json.loads(editor_decision.payload_json or "{}") if editor_decision else {}
         image_name = Path(content.image_path).name if content.image_path else None
+        image_url = (
+            f"/generated-images/{image_name}"
+            if image_name and os.getenv("VERCEL")
+            else f"/static/images/{image_name}" if image_name else None
+        )
         return templates.TemplateResponse(
             request=request,
             name="content-detail.html",
@@ -291,7 +306,7 @@ async def content_detail(request: Request, content_id: int):
                 "drafts": drafts,
                 "strategy": strategy,
                 "decisions": decisions,
-                "image_name": image_name,
+                "image_url": image_url,
                 "editor_result": editor_result,
                 "editor_scores": editor_result.get("scores", {}),
                 "legacy_placeholder": _is_legacy_fallback(content.final_text),
